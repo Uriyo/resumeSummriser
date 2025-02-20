@@ -5,6 +5,77 @@ import mongoose from 'mongoose';
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * /api/search/name:
+ *   post:
+ *     summary: Search for applicants by name
+ *     description: Searches the database for applicants whose decrypted name matches the given search parameter.
+ *     tags:
+ *       - Applicant Search
+ *     security:
+ *       - bearerAuth: []   # Requires Bearer token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "raj"
+ *     responses:
+ *       200:
+ *         description: Returns an array of matching applicants
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                   email:
+ *                     type: string
+ *                   education:
+ *                     type: object
+ *                     properties:
+ *                       degree:
+ *                         type: string
+ *                       branch:
+ *                         type: string
+ *                       institution:
+ *                         type: string
+ *                       year:
+ *                         type: number
+ *                   experience:
+ *                     type: object
+ *                     properties:
+ *                       job_title:
+ *                         type: string
+ *                       company:
+ *                         type: string
+ *                       start_date:
+ *                         type: string
+ *                       end_date:
+ *                         type: string
+ *                   skills:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                   summary:
+ *                     type: string
+ *       400:
+ *         description: Name search parameter is required
+ *       404:
+ *         description: No matching applicants found
+ *       500:
+ *         description: Failed to search resumes
+ */
+
+
 router.post('/name', verifyToken, async (req, res) => {
   try {
     const { name } = req.body;

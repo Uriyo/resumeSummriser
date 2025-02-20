@@ -8,6 +8,51 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import dotenv from 'dotenv';
 dotenv.config();
 
+/**
+ * @swagger
+ * /api/resume/analyze:
+ *   post:
+ *     summary: Analyze resume PDF
+ *     description: Downloads a PDF from a URL, extracts text, processes it with Gemini API, encrypts sensitive data and stores the applicant data.
+ *     tags:
+ *       - Resume Analysis
+ *     security:
+ *       - BearerAuth: []    # <--- Requires Bearer token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               url:
+ *                 type: string
+ *                 example: "https://www.dhli.in/uploaded_files/resumes/resume_3404.pdf"
+ *     responses:
+ *       200:
+ *         description: Resume processed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 name:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 education:
+ *                   type: object
+ *                 experience:
+ *                   type: object
+ *                 skills:
+ *                   type: array
+ *                 summary:
+ *                   type: string
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Failed to process resume
+ */
 
 const router = express.Router();
 
@@ -75,24 +120,30 @@ router.post('/analyze', verifyToken, async (req, res) => {
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
     const prompt = `
-      Analyze the following resume text and extract the information in strictly JSON format with these fields only:
-      - name (string): The candidate's full name
-      - email (string): The candidate's email address
-      - education: object containing
-        - degree (string): Highest degree obtained
-        - branch (string): Field of study
-        - institution (string): University or college name
-        - year (number): Year of completion
-      - experience: object containing
-        - job_title (string): Current or most recent job title
-        - company (string): Company name
-        - start_date (string): Start date in YYYY-MM format
-        - end_date (string): End date in YYYY-MM format or "present"
-      - skills (array): List of technical and professional skills
-      - summary (string): A brief professional summary of the candidate
+      Analyze the following resume text and Please parse the following resume text and return strictly valid JSON **only** (no extra text, no code fences, no disclaimers). The JSON must include exactly these fields:
+{
+  "name": "string",
+  "email": "string",
+  "education": {
+    "degree": "string",
+    "branch": "string",
+    "institution": "string",
+    "year": number
+  },
+  "experience": {
+    "job_title": "string",
+    "company": "string",
+    "start_date": "YYYY-MM",
+    "end_date": "YYYY-MM or 'present'"
+  },
+  "skills": ["string", "string", ...],
+  "summary": "string"
+}
 
-      Resume text:
-      ${data.text}
+If any field is missing from the resume, return it as an empty string, an empty array, or a suitable default (e.g., 0 for the year).
+
+Resume text:
+${data.text}
     `;
 
     const result = await model.generateContent(prompt);
@@ -101,9 +152,10 @@ router.post('/analyze', verifyToken, async (req, res) => {
 
     // Parse the JSON response from Gemini
     const cleanResponseText = response_text
-  .replace(/```json\s*/, '')
-  .replace(/\s*```/, '')
-  .trim();
+    .replace(/^JSON\s*/, '')       // remove "JSON" at the start if present
+    .replace(/```json\s*/g, '')    // remove ```json fences
+    .replace(/```/g, '') 
+    .trim();
 
     const processedData = JSON.parse(cleanResponseText);
     console.log('Parsed resume data:', processedData);
