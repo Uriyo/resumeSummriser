@@ -117,7 +117,7 @@ router.post('/analyze', verifyToken, async (req, res) => {
     }
 
     console.log('Sending text to Gemini API for processing...');
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     const prompt = `
       Analyze the following resume text and Please parse the following resume text and return strictly valid JSON **only** (no extra text, no code fences, no disclaimers). The JSON must include exactly these fields:

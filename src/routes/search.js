@@ -14,7 +14,7 @@ const router = express.Router();
  *     tags:
  *       - Applicant Search
  *     security:
- *       - bearerAuth: []   # Requires Bearer token
+ *       - BearerAuth: []   # Requires Bearer token
  *     requestBody:
  *       required: true
  *       content:

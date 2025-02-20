@@ -12,12 +12,13 @@ const options = {
     servers: [
       {
         url: 'https://resumesummriser.onrender.com',
+        // url: 'http://localhost:3000',
         description: 'Dev server'
       }
     ],
     components: {
       securitySchemes: {
-        bearerAuth: {
+        BearerAuth: {
           type: 'http',
           scheme: 'bearer',
           bearerFormat: 'JWT'
